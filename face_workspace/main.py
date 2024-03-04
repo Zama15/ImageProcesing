@@ -8,6 +8,8 @@ face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_fronta
 eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_eye.xml')
 left_ear_cascade = cv2.CascadeClassifier(path.join(current_dir, 'haarcascade_mcs_leftear.xml'))
 right_ear_cascade = cv2.CascadeClassifier(path.join(current_dir, 'haarcascade_mcs_rightear.xml'))
+mouth_cascade = cv2.CascadeClassifier(path.join(current_dir, 'haarcascade_mcs_mouth.xml'))
+nose_cascade = cv2.CascadeClassifier(path.join(current_dir, 'haarcascade_mcs_nose.xml'))
 
 def file_error(file, file_name):
     if file.empty():
@@ -17,6 +19,8 @@ file_error(face_cascade, 'face')
 file_error(eye_cascade, 'eye')
 file_error(right_ear_cascade, 'right ear')
 file_error(left_ear_cascade, 'left ear')
+file_error(mouth_cascade, 'mouth')
+file_error(nose_cascade, 'nose')
 
 cap = cv2.VideoCapture(0)
 ds_factor = 1.5
@@ -36,6 +40,8 @@ while True:
         roi_gray = gray[y:y+h, x:x+w]
         roi_color = frame[y:y+h, x:x+w]
         eyes = eye_cascade.detectMultiScale(roi_gray)
+        mouth = mouth_cascade.detectMultiScale(roi_gray)
+        nose = nose_cascade.detectMultiScale(roi_gray)
         cv2.putText(frame, 'Face', (x, y), font, 1, color, 2, cv2.LINE_AA)
         cv2.rectangle(frame, (x, y), (x+w, y+h), color, thickness)
 
@@ -43,6 +49,18 @@ while True:
             center = (int(x_eye + 0.5*w_eye), int(y_eye + 0.5*h_eye))
             radius = int(0.3*(w_eye + h_eye))
             cv2.putText(roi_color, 'Eye', (x_eye, y_eye), font, 1, color, 2, cv2.LINE_AA)
+            cv2.circle(roi_color, center, radius, color, thickness)
+
+        for(x_mouth, y_mouth, w_mouth, h_mouth) in mouth:
+            center = (int(x_mouth + 0.5*w_mouth), int(y_mouth + 0.5*h_mouth))
+            radius = int(0.3*(w_mouth + h_mouth))
+            cv2.putText(roi_color, 'Mouth', (x_mouth, y_mouth), font, 1, color, 2, cv2.LINE_AA)
+            cv2.circle(roi_color, center, radius, color, thickness)
+
+        for(x_nose, y_nose, w_nose, h_nose) in nose:
+            center = (int(x_nose + 0.5*w_nose), int(y_nose + 0.5*h_nose))
+            radius = int(0.3*(w_nose + h_nose))
+            cv2.putText(roi_color, 'Nose', (x_nose, y_nose), font, 1, color, 2, cv2.LINE_AA)
             cv2.circle(roi_color, center, radius, color, thickness)
 
     for(x_ear_l, y_ear_l, w_ear_l, h_ear_l) in left_ear:
