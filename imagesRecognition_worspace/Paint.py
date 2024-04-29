@@ -1,7 +1,7 @@
 from ConvertImage import EPS2PNG
 from ConvertImage import ToVector
 from numpy import argmax as Argmax
-from os import path
+from os import path, makedirs as mkdir
 from tkinter import Tk, Frame, Canvas, CENTER, Button, NW, Label, SOLID, DOTBOX
 
 ########### Constants ###########
@@ -162,11 +162,17 @@ class Paint:
     self.canvas.delete("all")
 
   def __saveImg(self):
+    self.__saveImgDirExists()
     self.canvas.postscript(file=path.join(IMG_PATH, IMG_NAME + '.eps'), colormode='color')
     EPS2PNG(IMG_PATH, IMG_NAME)
 
   def run(self):
     self.root.mainloop()
+
+  def __saveImgDirExists(self):
+    if not path.exists(IMG_PATH):
+      print("Directory does not exist")
+      mkdir(IMG_PATH)
 
 
 if __name__ == "__main__":
