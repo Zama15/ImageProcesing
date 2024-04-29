@@ -1,7 +1,7 @@
 from ConvertImage import EPS2PNG
 from ConvertImage import ToVector
 from numpy import argmax as Argmax
-from os import path, makedirs as mkdir
+from os import path
 from tkinter import Tk, Frame, Canvas, CENTER, Button, NW, Label, SOLID, DOTBOX
 
 ########### Constants ###########
@@ -10,9 +10,8 @@ MAIN_COLOR = "black"
 SECONDARY_COLOR = "white"
 WINDOW_HEIGHT = 460
 WINDOW_WIDTH = 540
-CANVAS_HEIGHT = 28
-CANVAS_WIDTH = 28
-CANVAS_SCALE = 10
+CANVAS_HEIGHT = 280
+CANVAS_WIDTH = 280
 IMG_PATH = path.join(path.dirname(path.abspath(__file__)), 'imgs')
 IMG_NAME = 'numberToPredict'
 
@@ -29,7 +28,7 @@ class Paint:
     self.__prevPoint = [0, 0]
     self.__currentPoint = [0, 0]
     self.__penColor = MAIN_COLOR
-    self.stroke = 28
+    self.stroke = 9
     self.predict = 'None'
     self.__predicting = False
     self._cnn_tools(predictFunc)
@@ -49,34 +48,17 @@ class Paint:
     self.holder.columnconfigure(0, minsize=120)
     self.holder.columnconfigure(1, minsize=120)
     self.holder.columnconfigure(2, minsize=120)
+    self.holder.columnconfigure(3, minsize=120)
     self.holder.rowconfigure(0, minsize=30)
 
     self.frame2 = Frame(self.root, height=310, width=540)
     self.frame2.grid(row=1, column=0)
 
   def _create_canvas(self):
-    self.canvas = Canvas(self.frame2, height=CANVAS_HEIGHT, width=CANVAS_WIDTH, bg=SECONDARY_COLOR, highlightthickness=0)
+    self.canvas = Canvas(self.frame2, height=CANVAS_HEIGHT, width=CANVAS_WIDTH, bg=SECONDARY_COLOR)
     self.canvas.grid(row=0, column=0)
     self.canvas.place(relx=0.5, rely=0.5, anchor=CENTER)
     self.canvas.config(cursor="pencil")
-
-    scaled_canvas = Canvas(self.frame2, height=CANVAS_HEIGHT * CANVAS_SCALE, width=CANVAS_WIDTH * CANVAS_SCALE, bg=SECONDARY_COLOR)
-    scaled_canvas.grid(row=0, column=0)
-    scaled_canvas.place(relx=0.5, rely=0.5, anchor=CENTER)
-
-    # Create a scaled image of the canvas
-    scaled_image = scaled_canvas.create_image(0, 0, image=None, anchor=NW)
-
-    # Function to update the scaled image
-    def update_scaled_image(event=None):
-        scaled_canvas_image = self.canvas.copy()
-        scaled_canvas_image = scaled_canvas_image.zoom(CANVAS_SCALE, CANVAS_SCALE)
-        scaled_canvas.itemconfig(scaled_image, image=scaled_canvas_image)
-
-    # Bind the update_scaled_image function to the canvas event
-    self.canvas.bind("<B1-Motion>", update_scaled_image)
-    self.canvas.bind("<ButtonRelease-1>", update_scaled_image)
-
 
   def _create_tools(self):
     label123 = Label(self.holder, text="TOOLS", borderwidth=1, relief=SOLID, width=15)
@@ -93,6 +75,15 @@ class Paint:
     exitButton = Button(self.holder, text="Exit", height=1, width=12, command=self.root.destroy)
     exitButton.grid(row=2, column=2)
 
+    label8910 = Label(self.holder, text="STROKE SIZE", borderwidth=1, relief=SOLID, width=15)
+    label8910.grid(row=0, column=3)
+    sizeiButton = Button(self.holder, text="Increase", height=1, width=12, command=self.__strokeI)
+    sizeiButton.grid(row=1, column=3)
+    sizedButton = Button(self.holder, text="Decrease", height=1, width=12, command=self.__strokeD)
+    sizedButton.grid(row=2, column=3)
+    defaultButton = Button(self.holder, text="Default", height=1, width=12, command=self.__strokeDf)
+    defaultButton.grid(row=3, column=3)
+
   def _cnn_tools(self, predictFunc):
     label456 = Label(self.holder, text="CNN TOOLS", borderwidth=1, relief=SOLID, width=15)
     label456.grid(row=0, column=1)
@@ -102,16 +93,6 @@ class Paint:
     predictButton.grid(row=1, column=1)
     predictResult = Label(self.holder, text=f"Prediction: {self.predict}", relief=SOLID, width=15, height=1)
     predictResult.grid(row=2, column=1)
-
-  def __init_predict(self, predictFunc):
-    if not self.__predicting:
-      print("not predicting")
-      self.__predicting = True
-
-    if self.__predicting:
-      print("predicting")
-      self.__predict(predictFunc)
-      self.__predicting = False
 
   def __predict(self, predictFunc):
     self.__saveImg()
@@ -171,17 +152,11 @@ class Paint:
     self.canvas.delete("all")
 
   def __saveImg(self):
-    self.__saveImgDirExists()
     self.canvas.postscript(file=path.join(IMG_PATH, IMG_NAME + '.eps'), colormode='color')
     EPS2PNG(IMG_PATH, IMG_NAME)
 
   def run(self):
     self.root.mainloop()
-
-  def __saveImgDirExists(self):
-    if not path.exists(IMG_PATH):
-      print("Directory does not exist")
-      mkdir(IMG_PATH)
 
 
 if __name__ == "__main__":
